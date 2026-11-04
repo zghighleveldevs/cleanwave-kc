@@ -6,6 +6,7 @@ Static multi-page website for CleanWave KC, a commercial cleaning company in Ola
 - `index.html` — Home
 - `services.html`, `industries.html`, `about.html`, `faq.html`
 - `quote.html` — Book a walkthrough (multi-step quote form)
+- `book.html` — Funnel booking step with the live GoHighLevel walkthrough calendar (`/book`)
 - `thank-you.html`, `residential.html`, `privacy-policy.html`, `terms.html`
 
 Shared styles live in `styles.css`; menu, form and animations in `site.js`. No build step is needed.
