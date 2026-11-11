@@ -111,3 +111,45 @@
   }, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
   targets.forEach(function(el){ io.observe(el); });
 })();
+
+/* ================= AD ATTRIBUTION, HEADLINE MATCH & CONVERSIONS ================= */
+(function(){
+  var KEYS=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid','v'];
+  var store={};
+  try{ store=JSON.parse(sessionStorage.getItem('cw_attr')||'{}'); }catch(e){}
+  var q=new URLSearchParams(location.search), changed=false;
+  KEYS.forEach(function(k){ var val=q.get(k); if(val && !store[k]){ store[k]=val.slice(0,200); changed=true; } });
+  if(!store.landing_page){ store.landing_page=location.pathname; changed=true; }
+  if(changed){ try{ sessionStorage.setItem('cw_attr',JSON.stringify(store)); }catch(e){} }
+  // fill hidden fields in the quote form
+  [].forEach.call(document.querySelectorAll('input[data-attr]'),function(el){ var k=el.getAttribute('data-attr'); if(store[k]) el.value=store[k]; });
+
+  // match the landing-page headline to the ad the visitor clicked (?v=)
+  var main=document.querySelector('main[data-page="lp"]');
+  if(main){
+    var V={
+      missed:['Did your cleaning company <em>skip a night</em> this month?','Get a written checklist, a supervisor-trained crew and a direct line to the owner. Free 30-minute walkthrough, written quote within 24 hours.'],
+      owner:['When you call CleanWave, you get <em>the owner</em>. Not a salesperson.','Justin walks your building, writes your scope and stays your direct contact after you start. Free walkthrough, written quote within 24 hours.'],
+      walkthrough:['One 30-minute walkthrough. <em>A written quote in 24 hours.</em>','Justin meets you on site, walks every space with you and builds a cleaning plan around your hours. No cost, no pressure.'],
+      signs:['Checking your cleaner’s work? <em>It’s time to switch.</em>','Missed cleanings, no call backs, a new crew every few weeks? Get a second opinion from CleanWave KC. It costs nothing.'],
+      monday:['Walk into a <em>spotless office</em> every Monday morning.','Empty trash, restocked restrooms, clean floors and streak-free glass, checked by supervisors and backed by the owner.']
+    };
+    var key=(q.get('v')||store.v||'').toLowerCase();
+    if(V[key]){ document.getElementById('lp-h').innerHTML=V[key][0]; document.getElementById('lp-s').textContent=V[key][1]; }
+    // sticky mobile bar appears once the form scrolls out of view
+    var bar=document.getElementById('lpbar'), form=document.getElementById('form');
+    if(bar && form && 'IntersectionObserver' in window){
+      new IntersectionObserver(function(es){ es.forEach(function(e){ bar.classList.toggle('show', !e.isIntersecting); }); },{threshold:0}).observe(form);
+    }
+  }
+
+  // conversion event: fires once when the thank-you page loads (needs the Meta Pixel / Google tag installed)
+  if(document.querySelector('main[data-page="thank-you"]')){
+    var done=false; try{ done=sessionStorage.getItem('cw_lead_fired')==='1'; }catch(e){}
+    if(!done){
+      if(typeof window.fbq==='function') window.fbq('track','Lead');
+      if(typeof window.gtag==='function') window.gtag('event','generate_lead');
+      try{ sessionStorage.setItem('cw_lead_fired','1'); }catch(e){}
+    }
+  }
+})();
