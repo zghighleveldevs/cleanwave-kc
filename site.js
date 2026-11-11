@@ -4,7 +4,10 @@
   if(b&&m){
     b.addEventListener('click',function(){var o=m.classList.toggle('open');b.setAttribute('aria-expanded',o)});
   }
-  // multi-step quote form (preview until the GoHighLevel form is embedded)
+  // multi-step quote form. Posts to the same GoHighLevel inbound webhook as the walkthrough funnel,
+  // then opens the booking calendar (book.html) with the contact details pre-filled.
+  var GHL_WEBHOOK_URL='https://services.leadconnectorhq.com/hooks/JgqazA9K8zxUtR2rZezR/webhook-trigger/d50bf8da-8275-4fed-9d60-32f199e4148f';
+  var BOOKING_PAGE='book.html';
   var f=document.getElementById('qform'); if(!f) return;
   var steps=[].slice.call(f.querySelectorAll('.qs')),bars=[].slice.call(f.querySelectorAll('.progress i'));
   var labels=['Your contact info','Your facility','Your situation'];
@@ -22,6 +25,7 @@
     var bad=[].slice.call(steps[s].querySelectorAll('[required]')).filter(function(el){
       return !el.value.trim()||(el.type==='email'&&!/^\S+@\S+\.\S+$/.test(el.value));
     });
+    if(s===0){var p=document.getElementById('ph');if(p.value&&p.value.replace(/\D/g,'').length<10&&bad.indexOf(p)<0)bad.push(p)}
     if(s===1){var z=document.getElementById('zip');if(z.value&&!/^\d{5}$/.test(z.value)&&bad.indexOf(z)<0)bad.push(z)}
     if(bad.length){
       err.textContent='Please fill in: '+bad.map(function(el){return f.querySelector('label[for="'+el.id+'"]').textContent.toLowerCase()}).join(', ')+'.';
@@ -29,13 +33,28 @@
     }
     return true;
   }
-  document.getElementById('hc').addEventListener('change',function(e){document.getElementById('whyBox').hidden=e.target.value!=='Yes'});
+  document.getElementById('hc').addEventListener('change',function(e){document.getElementById('whyBox').hidden=e.target.value!=='Yes, switching'});
   back.addEventListener('click',function(){s--;show()});
   f.addEventListener('submit',function(e){
     e.preventDefault(); if(!valid()) return;
     if(s===1&&document.getElementById('ft').value==='residential'){location.href='residential.html';return}
     if(s<2){s++;show();steps[s].querySelector('input,select,textarea').focus();return}
-    location.href='thank-you.html';
+    var data={source:'Website',page:location.pathname};
+    [].forEach.call(f.elements,function(el){
+      if(!el.name||el.disabled) return;
+      if(el.type==='checkbox'){ if(el.name==='sms_consent') data.sms_consent=el.checked?'yes':'no'; else if(el.checked) data[el.name]=(data[el.name]?data[el.name]+', ':'')+el.value; return; }
+      var v=(el.value||'').trim(); if(v) data[el.name]=v;
+    });
+    var q=new URLSearchParams();
+    ['first_name','last_name','email','phone','company_name'].forEach(function(k){ if(data[k]) q.set(k,data[k]); });
+    var dest=BOOKING_PAGE+'?'+q.toString();
+    next.disabled=true; next.textContent='Sending…';
+    try{ sessionStorage.setItem('cw_lead_pending','1'); }catch(err){}
+    var go=function(){ location.href=dest; };
+    if(!GHL_WEBHOOK_URL){ go(); return; }
+    var t=setTimeout(go,4000);
+    fetch(GHL_WEBHOOK_URL,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+      .catch(function(){}).then(function(){ clearTimeout(t); go(); });
   });
 })();
 
@@ -144,12 +163,71 @@
   }
 
   // conversion event: fires once when the thank-you page loads (needs the Meta Pixel / Google tag installed)
-  if(document.querySelector('main[data-page="thank-you"]')){
-    var done=false; try{ done=sessionStorage.getItem('cw_lead_fired')==='1'; }catch(e){}
-    if(!done){
+  function once(key,fn){ var d=false; try{ d=sessionStorage.getItem(key)==='1'; }catch(e){} if(d) return; fn(); try{ sessionStorage.setItem(key,'1'); }catch(e){} }
+  // Lead: the quote form was submitted and the visitor reached the booking calendar
+  if(document.body.getAttribute('data-page')==='book'){
+    var pending=false; try{ pending=sessionStorage.getItem('cw_lead_pending')==='1'; }catch(e){}
+    if(pending) once('cw_lead_fired',function(){
       if(typeof window.fbq==='function') window.fbq('track','Lead');
       if(typeof window.gtag==='function') window.gtag('event','generate_lead');
-      try{ sessionStorage.setItem('cw_lead_fired','1'); }catch(e){}
-    }
+    });
   }
+  // Schedule: GoHighLevel redirected here after a walkthrough was booked
+  if(document.querySelector('main[data-page="thank-you"]')){
+    once('cw_schedule_fired',function(){
+      if(typeof window.fbq==='function') window.fbq('track','Schedule');
+      if(typeof window.gtag==='function') window.gtag('event','book_appointment');
+    });
+  }
+})();
+
+/* ================= 3D REVIEW COVERFLOW ================= */
+(function(){
+  var stage=document.getElementById('cf-stage'); if(!stage) return;
+  var cards=[].slice.call(stage.querySelectorAll('.cf-card')), n=cards.length, idx=0, timer;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var dotsWrap=document.getElementById('cf-dots'), dots=[];
+  cards.forEach(function(c,i){
+    var d=document.createElement('button'); d.type='button'; d.setAttribute('aria-label','Show review '+(i+1)+' of '+n);
+    d.addEventListener('click',function(){ go(i); restart(); }); dotsWrap.appendChild(d); dots.push(d);
+    c.addEventListener('click',function(){ if(i!==idx){ go(i); restart(); } });
+  });
+  function layout(){
+    var narrow=stage.clientWidth<700;
+    cards.forEach(function(c,i){
+      var o=i-idx; if(o>n/2) o-=n; if(o<-n/2) o+=n;
+      var a=Math.abs(o), sgn=o<0?-1:1, t, op=1, z=10-a;
+      if(a===0) t='translate3d(0,0,60px) rotateY(0deg)';
+      else if(a===1) t='translate3d('+(sgn*(narrow?72:62))+'%,0,-160px) rotateY('+(-sgn*(narrow?32:40))+'deg) scale(.92)';
+      else if(a===2) t='translate3d('+(sgn*(narrow?125:112))+'%,0,-340px) rotateY('+(-sgn*52)+'deg) scale(.84)', op=narrow?0:.55;
+      else t='translate3d('+(sgn*150)+'%,0,-520px) rotateY('+(-sgn*60)+'deg) scale(.7)', op=0;
+      c.style.transform=t; c.style.opacity=op; c.style.zIndex=z; c.style.filter=a?'brightness(.78) saturate(.85)':'none';
+      c.style.pointerEvents=op?'auto':'none';
+      c.classList.toggle('is-front',a===0); c.setAttribute('aria-hidden',a===0?'false':'true');
+    });
+    dots.forEach(function(d,i){ d.classList.toggle('on',i===idx); });
+  }
+  function go(k){ idx=(k+n)%n; layout(); }
+  function restart(){ clearInterval(timer); if(!reduce) timer=setInterval(function(){ go(idx+1); },5000); }
+  document.getElementById('cf-prev').addEventListener('click',function(){ go(idx-1); restart(); });
+  document.getElementById('cf-next').addEventListener('click',function(){ go(idx+1); restart(); });
+  stage.addEventListener('mouseenter',function(){ clearInterval(timer); });
+  stage.addEventListener('mouseleave',restart);
+  // drag / swipe
+  var sx=null;
+  stage.addEventListener('pointerdown',function(e){ sx=e.clientX; });
+  window.addEventListener('pointerup',function(e){ if(sx===null) return; var dx=e.clientX-sx; sx=null; if(Math.abs(dx)>40){ go(idx+(dx<0?1:-1)); restart(); } });
+  // the front card tilts toward the cursor
+  if(!reduce && window.matchMedia('(pointer: fine)').matches){
+    stage.addEventListener('mousemove',function(e){
+      var c=cards[idx], inner=c.querySelector('.cf-inner'), r=c.getBoundingClientRect();
+      var x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+      if(x<-.2||x>1.2||y<-.2||y>1.2){ inner.style.transform=''; return; }
+      inner.style.transform='rotateY('+((x-.5)*16).toFixed(1)+'deg) rotateX('+((.5-y)*12).toFixed(1)+'deg)';
+      inner.style.setProperty('--mx',(x*100).toFixed(0)+'%'); inner.style.setProperty('--my',(y*100).toFixed(0)+'%');
+    });
+    stage.addEventListener('mouseleave',function(){ cards.forEach(function(c){ c.querySelector('.cf-inner').style.transform=''; }); });
+  }
+  window.addEventListener('resize',layout);
+  layout(); restart();
 })();

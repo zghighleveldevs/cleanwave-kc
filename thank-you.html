@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Thank You · CleanWave KC</title>
+<link rel="icon" type="image/png" href="img/logo-mark.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
@@ -37,10 +38,10 @@
 </defs></svg>
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="index.html"><img src="img/logo.png" alt="CleanWave KC logo"><span>CleanWave <b>KC</b></span></a>
+    <a class="logo" href="index.html" aria-label="CleanWave KC home"><span class="brand-logo"><img class="brand-mark" src="img/logo-mark.png" alt="" width="43" height="46"><img class="brand-word" src="img/logo-word.png" alt="CleanWave KC" width="199" height="23"></span></a>
     <nav class="nav" aria-label="Main"><a href="index.html">Home</a><a href="services.html">Services</a><a href="industries.html">Industries</a><a href="about.html">About</a><a href="faq.html">FAQ</a><a href="quote.html">Contact</a></nav>
     <a class="phone" href="tel:+18160000000"><svg class="ico"><use href="#i-phone"/></svg>(816) 000-0000</a>
-    <a class="btn btn-teal" href="quote.html">Book My Free Walkthrough</a>
+    <a class="btn btn-teal" href="quote.html">Book Free Walkthrough</a>
     <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><svg class="ico" style="width:26px;height:26px"><use href="#i-menu"/></svg></button>
   </div>
   <nav class="mnav" id="mnav" aria-label="Mobile"><a href="index.html">Home</a><a href="services.html">Services</a><a href="industries.html">Industries</a><a href="about.html">About</a><a href="faq.html">FAQ</a><a href="quote.html">Contact</a><a href="tel:+18160000000">Call (816) 000-0000</a><a class="btn btn-teal" href="quote.html">Book My Free Walkthrough</a></nav>
@@ -48,34 +49,41 @@
 <main data-page="thank-you">
 <section class="hero phero small" style="background-image:url('img/hero-thanks.jpg')">
   <div class="wrap">
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Thank you</span></nav>
-    <h1>Thanks! Your request is in.</h1>
-    <p class="lede">Pick a time below for your free walkthrough. Justin will meet you on-site, tour your space and send a written quote within 24 hours.</p>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Confirmed</span></nav>
+    <h1>You're booked. See you soon!</h1>
+    <p class="lede">Your free walkthrough is on Justin's calendar. A confirmation is on its way to your email and phone.</p>
     
   </div>
 </section>
 <section class="sec"><div class="wrap">
-  <!-- GHL CALENDAR EMBED HERE: replace this block with the "Facility Walkthrough" calendar embed. -->
-  <div class="cal">
-    <span class="ph">Calendar placeholder</span>
-    <h2 style="font-size:1.3rem">Facility Walkthrough · 30 min</h2>
-    <div class="slots"><span>Tue 9:00 AM</span><span>Tue 1:30 PM</span><span>Wed 10:00 AM</span><span>Thu 2:00 PM</span><span>Fri 9:30 AM</span></div>
-    <p class="note">The live booking calendar from GoHighLevel goes here.</p>
+  <div class="booked">
+    <span class="badge big"><svg class="ico"><use href="#i-check"/></svg></span>
+    <h2 id="ty-h">Your walkthrough is confirmed</h2>
+    <p id="ty-when" class="note">Check your email for the date, time and a calendar invite.</p>
+    <div class="booked-meta"><span><svg class="ico"><use href="#i-clock"/></svg>30 minutes</span><span><svg class="ico"><use href="#i-pin"/></svg>On-site at your facility</span><span><svg class="ico"><use href="#i-doc"/></svg>Written quote within 24 hours</span></div>
+    <p class="note">Need to change the time? Call or text Justin at <a href="tel:+18160000000">(816) 000-0000</a>.</p>
   </div>
 </div></section>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search), n=q.get('first_name'), d=q.get('appointment_date'), t=q.get('appointment_time');
+  if(n) document.getElementById('ty-h').textContent='Thanks, '+n.slice(0,40)+'. Your walkthrough is confirmed.';
+  if(d) document.getElementById('ty-when').textContent='Justin will see you on '+d.slice(0,40)+(t?' at '+t.slice(0,20):'')+'.';
+})();
+</script>
 <section class="sec alt"><div class="wrap">
   <div class="head"><span class="eyebrow">What to expect</span><h2>Your walkthrough, step by step</h2></div>
   <div class="steps light-steps">
     <div class="step"><span class="badge"><svg class="ico"><use href="#i-cal"/></svg></span><span class="num">Before</span><h3>Confirmation &amp; reminder</h3><p>You'll get a confirmation now and a reminder the day before.</p></div>
     <div class="step"><span class="badge"><svg class="ico"><use href="#i-walk"/></svg></span><span class="num">During</span><h3>30-minute tour</h3><p>Show Justin the areas that matter most and any problem spots.</p></div>
-    <div class="step"><span class="badge"><svg class="ico"><use href="#i-doc"/></svg></span><span class="num">After</span><h3>Written proposal</h3><p>A fixed monthly price and scope in your inbox within 24 hours.</p></div>
+    <div class="step"><span class="badge"><svg class="ico"><use href="#i-doc"/></svg></span><span class="num">After</span><h3>Written quote</h3><p>A fixed monthly price and scope in your inbox within 24 hours.</p></div>
   </div>
 </div></section>
 </main>
 <footer>
   <div class="wrap">
     <div>
-      <a class="logo" href="index.html"><img src="img/logo.png" alt=""><span>CleanWave <b>KC</b></span></a>
+      <a class="logo" href="index.html" aria-label="CleanWave KC home"><span class="brand-logo"><img class="brand-mark" src="img/logo-mark.png" alt="" width="43" height="46"><img class="brand-word" src="img/logo-word.png" alt="CleanWave KC" width="199" height="23"></span></a>
       <p style="font-size:.92rem;max-width:32ch">Locally owned and operated commercial cleaning, serving businesses throughout the Kansas City metro.</p>
     </div>
     <div><h4>Explore</h4><ul><li><a href="services.html">Services</a></li><li><a href="industries.html">Industries</a></li><li><a href="about.html">About Us</a></li><li><a href="faq.html">FAQ</a></li><li><a href="quote.html">Book a Free Walkthrough</a></li></ul></div>
