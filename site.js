@@ -167,6 +167,7 @@
   // Lead: the quote form was submitted and the visitor reached the booking calendar
   if(document.body.getAttribute('data-page')==='book'){
     var pending=false; try{ pending=sessionStorage.getItem('cw_lead_pending')==='1'; }catch(e){}
+    if(/\/apply(\?|#|$)/.test(document.referrer.replace(/^https?:\/\/[^/]+/,''))) pending=true; // funnel served at /apply
     if(pending) once('cw_lead_fired',function(){
       if(typeof window.fbq==='function') window.fbq('track','Lead');
       if(typeof window.gtag==='function') window.gtag('event','generate_lead');

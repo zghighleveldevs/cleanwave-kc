@@ -30,3 +30,9 @@ Import this repo at vercel.com/new. Framework preset: **Other**. Leave the build
 3. After booking, GHL redirects to the calendar's Redirect URL. `/thank-you` on this site reads `first_name`, `appointment_date` and `appointment_time` if they're passed.
 
 Conversion events: `Lead` fires on `/book` (form submitted), `Schedule` fires on `/thank-you` (walkthrough booked), once the Meta Pixel / Google tag are added.
+
+## cleanwavekc.com/apply (walkthrough funnel)
+`/apply` serves the walkthrough funnel (repo `zghighleveldevs/cleanwave-book`, deployed at cleanwave-book.vercel.app) through rewrites in `vercel.json`, so funnel updates appear here automatically.
+- The funnel's relative files resolve from the site root: `/funnel.js` is rewritten to the funnel, and `/img/*` falls back to the funnel when this site doesn't have the file.
+- After the funnel's quote form, visitors continue to this site's `/book`, the same GoHighLevel calendar. The `Lead` event also fires for visitors arriving from `/apply`.
+- If the funnel adds new root-level files (other than images), add a matching rewrite.

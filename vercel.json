@@ -1,6 +1,11 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/apply", "destination": "https://cleanwave-book.vercel.app/" },
+    { "source": "/funnel.js", "destination": "https://cleanwave-book.vercel.app/funnel.js" },
+    { "source": "/img/:file", "destination": "https://cleanwave-book.vercel.app/img/:file" }
+  ],
   "headers": [
     { "source": "/img/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
   ]
