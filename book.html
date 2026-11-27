@@ -6,7 +6,18 @@
 <link rel="icon" type="image/png" href="img/logo-mark.png">
 <title>Book Your Walkthrough · CleanWave KC</title>
 <meta name="robots" content="noindex">
-<!-- TRACKING: paste the Meta Pixel base code and the Google tag (gtag.js) here, on every page. -->
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '2167395890811356');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=2167395890811356&amp;ev=PageView&amp;noscript=1"></noscript>
+<!-- End Meta Pixel -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -75,6 +86,13 @@ a{color:var(--accent)}
 @media (max-width:420px){.brand-mark{height:38px}.brand-word{height:18px}}
 @media (prefers-reduced-motion: reduce){.brand-mark{animation:none}}
 </style>
+<script>
+// Sends the quote that was just submitted to GoHighLevel. The form saves it and opens this page
+// instantly, so the visitor never waits; the lead is delivered here, once, while they pick a time.
+(function(){var raw=null;try{raw=sessionStorage.getItem('cw_pending_lead');sessionStorage.removeItem('cw_pending_lead');}catch(e){}
+if(!raw)return;var p;try{p=JSON.parse(raw);}catch(e){return;}
+if(p&&p.url&&p.data)fetch(p.url,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(p.data)}).catch(function(){});})();
+</script>
 </head>
 <body data-page="book">
 

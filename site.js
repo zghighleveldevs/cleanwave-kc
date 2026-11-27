@@ -48,13 +48,18 @@
     var q=new URLSearchParams();
     ['first_name','last_name','email','phone','company_name'].forEach(function(k){ if(data[k]) q.set(k,data[k]); });
     var dest=BOOKING_PAGE+'?'+q.toString();
-    next.disabled=true; next.textContent='Sending…';
-    try{ sessionStorage.setItem('cw_lead_pending','1'); }catch(err){}
-    var go=function(){ location.href=dest; };
-    if(!GHL_WEBHOOK_URL){ go(); return; }
-    var t=setTimeout(go,4000);
-    fetch(GHL_WEBHOOK_URL,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
-      .catch(function(){}).then(function(){ clearTimeout(t); go(); });
+    // Meta Pixel Lead fires on the click itself; event_id is also sent to GHL for de-duplication.
+    data.event_id='lead_'+Date.now()+'_'+Math.random().toString(36).slice(2,10);
+    if(typeof window.fbq==='function'){
+      var digits=(data.phone||'').replace(/\D/g,''); if(digits.length===10) digits='1'+digits;
+      window.fbq('init','2167395890811356',{em:(data.email||'').toLowerCase(),ph:digits,fn:(data.first_name||'').toLowerCase(),ln:(data.last_name||'').toLowerCase(),zp:data.postal_code||'',country:'us'});
+      window.fbq('track','Lead',{content_name:'Website quote form',content_category:data.facility||'Commercial cleaning'},{eventID:data.event_id});
+    }
+    if(typeof window.gtag==='function') window.gtag('event','generate_lead');
+    // Hand the lead to the booking page (it posts it to GHL) and go there immediately.
+    try{ sessionStorage.setItem('cw_pending_lead',JSON.stringify({url:GHL_WEBHOOK_URL,data:data})); }
+    catch(err){ if(GHL_WEBHOOK_URL) fetch(GHL_WEBHOOK_URL,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){}); }
+    location.href=dest;
   });
 })();
 
@@ -164,15 +169,6 @@
 
   // conversion event: fires once when the thank-you page loads (needs the Meta Pixel / Google tag installed)
   function once(key,fn){ var d=false; try{ d=sessionStorage.getItem(key)==='1'; }catch(e){} if(d) return; fn(); try{ sessionStorage.setItem(key,'1'); }catch(e){} }
-  // Lead: the quote form was submitted and the visitor reached the booking calendar
-  if(document.body.getAttribute('data-page')==='book'){
-    var pending=false; try{ pending=sessionStorage.getItem('cw_lead_pending')==='1'; }catch(e){}
-    if(/\/apply(\?|#|$)/.test(document.referrer.replace(/^https?:\/\/[^/]+/,''))) pending=true; // funnel served at /apply
-    if(pending) once('cw_lead_fired',function(){
-      if(typeof window.fbq==='function') window.fbq('track','Lead');
-      if(typeof window.gtag==='function') window.gtag('event','generate_lead');
-    });
-  }
   // Schedule: GoHighLevel redirected here after a walkthrough was booked
   if(document.querySelector('main[data-page="thank-you"]')){
     once('cw_schedule_fired',function(){
